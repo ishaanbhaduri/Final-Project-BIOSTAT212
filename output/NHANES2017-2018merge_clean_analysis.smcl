@@ -1,0 +1,866 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/Users/ishaanbhaduri/Library/Mobile Documents/com~apple~CloudDocs/03 Research/Stata/BIOSTAT 212/Lecture 7 BIOSTAT 212/Homework/output/NHANES2017-2018merge_clean_analysis.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}31 Aug 2025, 10:22:13
+{txt}
+{com}. 
+. /*Convert raw data into STATA .dta files*/
+. 
+. //Import Blood Pressure raw data
+. import sasxport5 "data/BPX_J_2017-2018_Feb2020.xpt", clear
+{txt}
+{com}. save "data/BPX_J_2017-2018_Feb2020.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+data/BPX_J_2017-2018_Feb2020.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. //Import Demographics raw data
+. clear
+{txt}
+{com}. import sasxport5 "data/DEMO_J_2017-2018_Feb2020.xpt", clear
+{txt}
+{com}. save "data/DEMO_J_2017-2018_Feb2020.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+data/DEMO_J_2017-2018_Feb2020.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. //Import Food Security raw data
+. clear
+{txt}
+{com}. import sasxport5 "data/FSQ_J_2017-2018_Feb2022.xpt", clear
+{txt}
+{com}. save "data/FSQ_J_2017-2018_Feb2022.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+data/FSQ_J_2017-2018_Feb2022.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. //Import Sleep Disorders raw data
+. clear
+{txt}
+{com}. import sasxport5 "data/SLQ_J_2017-2018_Feb2020.xpt", clear
+{txt}
+{com}. save "data/SLQ_J_2017-2018_Feb2020.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+data/SLQ_J_2017-2018_Feb2020.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. clear
+{txt}
+{com}. 
+. // -------------------------------------------------------------------------------------------------
+. // SECTION 2: MERGING DATA
+. // -------------------------------------------------------------------------------------------------
+. 
+. /*Merge all four .dta files by the `seqn` identifier*/
+. 
+. //Load the first dataset as the master file
+. use "data/DEMO_J_2017-2018_Feb2020.dta", clear
+{txt}
+{com}. sort seqn
+{txt}
+{com}. 
+. //Merge the second dataset (Blood Pressure)
+. merge 1:1 seqn using "data/BPX_J_2017-2018_Feb2020.dta"
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}             550
+{txt}{col 9}from master{col 30}{res}             550{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}Matched{col 30}{res}           8,704{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. tabulate _merge
+
+   {txt}Matching result from {c |}
+                  merge {c |}      Freq.     Percent        Cum.
+{hline 24}{c +}{hline 35}
+        Master only (1) {c |}{res}        550        5.94        5.94
+{txt}            Matched (3) {c |}{res}      8,704       94.06      100.00
+{txt}{hline 24}{c +}{hline 35}
+                  Total {c |}{res}      9,254      100.00
+{txt}
+{com}. drop _merge
+{txt}
+{com}. 
+. //Merge the third dataset (Food Security)
+. sort seqn
+{txt}
+{com}. merge 1:1 seqn using "data/FSQ_J_2017-2018_Feb2022.dta"
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}           9,254{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. tabulate _merge
+
+   {txt}Matching result from {c |}
+                  merge {c |}      Freq.     Percent        Cum.
+{hline 24}{c +}{hline 35}
+            Matched (3) {c |}{res}      9,254      100.00      100.00
+{txt}{hline 24}{c +}{hline 35}
+                  Total {c |}{res}      9,254      100.00
+{txt}
+{com}. drop _merge
+{txt}
+{com}. 
+. //Merge the fourth dataset (Sleep Disorders)
+. sort seqn
+{txt}
+{com}. merge 1:1 seqn using "data/SLQ_J_2017-2018_Feb2020.dta"
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}           3,093
+{txt}{col 9}from master{col 30}{res}           3,093{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}Matched{col 30}{res}           6,161{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. tabulate _merge
+
+   {txt}Matching result from {c |}
+                  merge {c |}      Freq.     Percent        Cum.
+{hline 24}{c +}{hline 35}
+        Master only (1) {c |}{res}      3,093       33.42       33.42
+{txt}            Matched (3) {c |}{res}      6,161       66.58      100.00
+{txt}{hline 24}{c +}{hline 35}
+                  Total {c |}{res}      9,254      100.00
+{txt}
+{com}. drop _merge
+{txt}
+{com}. 
+. //Save the final merged file
+. save "output/NHANES_2017-2018_merged.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+output/NHANES_2017-2018_merged.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. //-------------------------------------------------------------------------------------------------
+. // SECTION 3: DATA CLEANING AND VARIABLE CREATION
+. // -------------------------------------------------------------------------------------------------
+. 
+. /*Keep only the variables needed for the final analysis*/
+. keep seqn fsdad sld012 slq120 ridageyr riagendr ridreth3 indhhin2 dmdhhsiz dmdeduc2 bpxsy1 bpxdi1 bpxsy2 bpxdi2 bpxsy3 bpxdi3 wtint2yr sdmvpsu sdmvstra
+{txt}
+{com}. 
+. //Save the dropped file
+. save "output/NHANES_2017-2018_merged_dropped.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+output/NHANES_2017-2018_merged_dropped.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. /*Rename and relabel variables for clarity*/
+. rename ridageyr age
+{res}{txt}
+{com}. rename riagendr gender
+{res}{txt}
+{com}. rename dmdeduc2 education
+{res}{txt}
+{com}. rename ridreth3 race
+{res}{txt}
+{com}. rename dmdhhsiz householdsize
+{res}{txt}
+{com}. rename indhhin2 householdincome
+{res}{txt}
+{com}. rename sld012 sleephours
+{res}{txt}
+{com}. rename slq120 sleepyday
+{res}{txt}
+{com}. rename fsdad foodsecurity
+{res}{txt}
+{com}. 
+. // Drop individuals too young for hypertension analysis
+. drop if age < 18
+{txt}(3,398 observations deleted)
+
+{com}. 
+. /*Label and recode categorical variables: gender, race, education, household income, food security, and day sleepiness*/
+. 
+. // Label and recode gender
+. label define gender_labels 1 "Male" 2 "Female"
+{txt}
+{com}. label values gender gender_labels
+{txt}
+{com}. tabulate gender
+
+     {txt}Gender {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+       Male {c |}{res}      2,840       48.50       48.50
+{txt}     Female {c |}{res}      3,016       51.50      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      5,856      100.00
+{txt}
+{com}. 
+. // Label and recode race
+. label define race_labels 1 "Mexican American" 2 "Other Hispanic" 3 "Non-Hispanic White" 4 "Non-Hispanic Black" 6 "Non-Hispanic Asian" 7 "Other Race"
+{txt}
+{com}. label values race race_labels
+{txt}
+{com}. tabulate race
+
+     {txt}Race/Hispanic {c |}
+origin w/ NH Asian {c |}      Freq.     Percent        Cum.
+{hline 19}{c +}{hline 35}
+  Mexican American {c |}{res}        792       13.52       13.52
+{txt}    Other Hispanic {c |}{res}        543        9.27       22.80
+{txt}Non-Hispanic White {c |}{res}      2,032       34.70       57.50
+{txt}Non-Hispanic Black {c |}{res}      1,343       22.93       80.43
+{txt}Non-Hispanic Asian {c |}{res}        849       14.50       94.93
+{txt}        Other Race {c |}{res}        297        5.07      100.00
+{txt}{hline 19}{c +}{hline 35}
+             Total {c |}{res}      5,856      100.00
+{txt}
+{com}. 
+. // Label and recode education level
+. label define education_labels 1 "Less than 9th grade" 2 "9-11th grade" 3 "High school graduate" 4 "Some college or AA" 5 "College graduate or above"
+{txt}
+{com}. label values education education_labels
+{txt}
+{com}. recode education (7 9 = .)
+{txt}(13 changes made to {bf:education})
+
+{com}. tabulate education
+
+ {txt}Education level - Adults {c |}
+                      20+ {c |}      Freq.     Percent        Cum.
+{hline 26}{c +}{hline 35}
+      Less than 9th grade {c |}{res}        479        8.62        8.62
+{txt}             9-11th grade {c |}{res}        638       11.48       20.10
+{txt}     High school graduate {c |}{res}      1,325       23.85       43.95
+{txt}       Some college or AA {c |}{res}      1,778       32.00       75.95
+{txt}College graduate or above {c |}{res}      1,336       24.05      100.00
+{txt}{hline 26}{c +}{hline 35}
+                    Total {c |}{res}      5,556      100.00
+{txt}
+{com}. 
+. // Label and recode household income
+. label define householdincome_labels 1 "$ 0-4,999" 2 "$ 5,000-9,999" 3 "$10,000-14,999" 4 "$15,000-19,999" 5 "$20,000-24,999" 6 "$25,000-34,999" 7 "$35,000-44,999" 8 "$45,000-54,999" 9 "$55,000-64,999" 10 "$65,000-74,999" 12 "$20,000 and Over" 13 "Under $20,000" 14 "$75,000-99,999" 15 "$100,000 and Over"
+{txt}
+{com}. label values householdincome householdincome_labels
+{txt}
+{com}. recode householdincome (77 99 = .)
+{txt}(267 changes made to {bf:householdincome})
+
+{com}. tabulate householdincome
+
+ {txt}Annual household {c |}
+           income {c |}      Freq.     Percent        Cum.
+{hline 18}{c +}{hline 35}
+        $ 0-4,999 {c |}{res}        165        3.15        3.15
+{txt}    $ 5,000-9,999 {c |}{res}        166        3.17        6.32
+{txt}   $10,000-14,999 {c |}{res}        265        5.06       11.37
+{txt}   $15,000-19,999 {c |}{res}        339        6.47       17.84
+{txt}   $20,000-24,999 {c |}{res}        346        6.60       24.45
+{txt}   $25,000-34,999 {c |}{res}        584       11.15       35.59
+{txt}   $35,000-44,999 {c |}{res}        573       10.94       46.53
+{txt}   $45,000-54,999 {c |}{res}        392        7.48       54.01
+{txt}   $55,000-64,999 {c |}{res}        338        6.45       60.46
+{txt}   $65,000-74,999 {c |}{res}        277        5.29       65.74
+{txt} $20,000 and Over {c |}{res}        222        4.24       69.98
+{txt}    Under $20,000 {c |}{res}         75        1.43       71.41
+{txt}   $75,000-99,999 {c |}{res}        505        9.64       81.05
+{txt}$100,000 and Over {c |}{res}        993       18.95      100.00
+{txt}{hline 18}{c +}{hline 35}
+            Total {c |}{res}      5,240      100.00
+{txt}
+{com}. 
+. // Label and recode food security
+. label define foodsecurity_labels 1 "Full food security" 2 "Marginal food security" 3 "Low food security" 4 "Very low food security"
+{txt}
+{com}. label values foodsecurity foodsecurity_labels
+{txt}
+{com}. tabulate foodsecurity
+
+   {txt}Adult food security {c |}
+              category {c |}      Freq.     Percent        Cum.
+{hline 23}{c +}{hline 35}
+    Full food security {c |}{res}      3,488       63.29       63.29
+{txt}Marginal food security {c |}{res}        785       14.24       77.54
+{txt}     Low food security {c |}{res}        711       12.90       90.44
+{txt}Very low food security {c |}{res}        527        9.56      100.00
+{txt}{hline 23}{c +}{hline 35}
+                 Total {c |}{res}      5,511      100.00
+{txt}
+{com}. 
+. // Label and recode day sleepiness
+. label define sleepyday_labels 0 "Never" 1 "Rarely" 2 "Sometimes" 3 "Often" 4 "Almost always"
+{txt}
+{com}. label values sleepyday sleepyday_labels
+{txt}
+{com}. recode sleepyday (7 9 = .)
+{txt}(12 changes made to {bf:sleepyday})
+
+{com}. tabulate sleepyday
+
+    {txt}How often {c |}
+  feel overly {c |}
+sleepy during {c |}
+         day? {c |}      Freq.     Percent        Cum.
+{hline 14}{c +}{hline 35}
+        Never {c |}{res}        975       16.68       16.68
+{txt}       Rarely {c |}{res}      1,387       23.73       40.42
+{txt}    Sometimes {c |}{res}      1,965       33.62       74.04
+{txt}        Often {c |}{res}      1,011       17.30       91.34
+{txt}Almost always {c |}{res}        506        8.66      100.00
+{txt}{hline 14}{c +}{hline 35}
+        Total {c |}{res}      5,844      100.00
+{txt}
+{com}. 
+. // Create derived outcome and exposure variables
+. 
+. // Calculate the mean of the three available blood pressure readings
+. egen mean_sys_bp = rowmean(bpxsy1 bpxsy2 bpxsy3)
+{txt}(609 missing values generated)
+
+{com}. egen mean_dia_bp = rowmean(bpxdi1 bpxdi2 bpxdi3)
+{txt}(609 missing values generated)
+
+{com}. 
+. // Create the hypertension variable based on AHA 2017 guidelines
+. gen hypertension = 0
+{txt}
+{com}. replace hypertension = 1 if mean_sys_bp >= 130 | mean_dia_bp >= 80
+{txt}(2,945 real changes made)
+
+{com}. label variable hypertension "Hypertension Status"
+{txt}
+{com}. label define hypertension_labels 0 "No Hypertension" 1 "Hypertension"
+{txt}
+{com}. label values hypertension hypertension_labels
+{txt}
+{com}. tabulate hypertension
+
+   {txt}Hypertension {c |}
+         Status {c |}      Freq.     Percent        Cum.
+{hline 16}{c +}{hline 35}
+No Hypertension {c |}{res}      2,911       49.71       49.71
+{txt}   Hypertension {c |}{res}      2,945       50.29      100.00
+{txt}{hline 16}{c +}{hline 35}
+          Total {c |}{res}      5,856      100.00
+{txt}
+{com}. 
+. // Create a binary variable for poor sleep (Sometimes, Often, or Almost Always)
+. gen poor_sleep = 0
+{txt}
+{com}. replace poor_sleep = 1 if sleepyday >= 2 & sleepyday <= 4
+{txt}(3,482 real changes made)
+
+{com}. label variable poor_sleep "Poor Sleep"
+{txt}
+{com}. label define poor_sleep_labels 0 "No Poor Sleep" 1 "Poor Sleep"
+{txt}
+{com}. label values poor_sleep poor_sleep_labels
+{txt}
+{com}. tabulate poor_sleep
+
+   {txt}Poor Sleep {c |}      Freq.     Percent        Cum.
+{hline 14}{c +}{hline 35}
+No Poor Sleep {c |}{res}      2,374       40.54       40.54
+{txt}   Poor Sleep {c |}{res}      3,482       59.46      100.00
+{txt}{hline 14}{c +}{hline 35}
+        Total {c |}{res}      5,856      100.00
+{txt}
+{com}. 
+. // Create a binary variable for food insecurity (Marginal, Low, or Very Low food security)
+. gen food_insecurity = 0
+{txt}
+{com}. replace food_insecurity = 1 if foodsecurity >= 2 & foodsecurity <= 4
+{txt}(2,023 real changes made)
+
+{com}. label variable food_insecurity "Food Insecurity"
+{txt}
+{com}. label define food_insecurity_labels 0 "No Food Insecurity" 1 "Food Insecurity"
+{txt}
+{com}. label values food_insecurity food_insecurity_labels
+{txt}
+{com}. tabulate food_insecurity
+
+   {txt}Food Insecurity {c |}      Freq.     Percent        Cum.
+{hline 19}{c +}{hline 35}
+No Food Insecurity {c |}{res}      3,833       65.45       65.45
+{txt}   Food Insecurity {c |}{res}      2,023       34.55      100.00
+{txt}{hline 19}{c +}{hline 35}
+             Total {c |}{res}      5,856      100.00
+{txt}
+{com}. 
+. // Create the combined exposure variable with four clear categories
+. gen exposure = .
+{txt}(5,856 missing values generated)
+
+{com}. replace exposure = 1 if food_insecurity == 0 & poor_sleep == 0 // Neither
+{txt}(1,641 real changes made)
+
+{com}. replace exposure = 2 if food_insecurity == 1 & poor_sleep == 0 // Food Insecurity Only
+{txt}(733 real changes made)
+
+{com}. replace exposure = 3 if food_insecurity == 0 & poor_sleep == 1 // Poor Sleep Only
+{txt}(2,192 real changes made)
+
+{com}. replace exposure = 4 if food_insecurity == 1 & poor_sleep == 1 // Both
+{txt}(1,290 real changes made)
+
+{com}. label variable exposure "Combined Exposure to Food Insecurity and Poor Sleep"
+{txt}
+{com}. label define exposure_labels 1 "Neither" 2 "Food Insecurity Only" 3 "Poor Sleep Only" 4 "Both"
+{txt}
+{com}. label values exposure exposure_labels
+{txt}
+{com}. tabulate exposure
+
+{txt}Combined Exposure to {c |}
+ Food Insecurity and {c |}
+          Poor Sleep {c |}      Freq.     Percent        Cum.
+{hline 21}{c +}{hline 35}
+             Neither {c |}{res}      1,641       28.02       28.02
+{txt}Food Insecurity Only {c |}{res}        733       12.52       40.54
+{txt}     Poor Sleep Only {c |}{res}      2,192       37.43       77.97
+{txt}                Both {c |}{res}      1,290       22.03      100.00
+{txt}{hline 21}{c +}{hline 35}
+               Total {c |}{res}      5,856      100.00
+{txt}
+{com}. 
+. // Save cleaned and merged data
+. save "output/NHANES_2017-2018_cleaned.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+output/NHANES_2017-2018_cleaned.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. /// -------------------------------------------------------------------------------------------------
+> // SECTION 4: MAIN ANALYSIS & OUTPUT GENERATION
+. // -------------------------------------------------------------------------------------------------
+. 
+. // Set the survey design for correct variance estimation
+. svyset [pweight=wtint2yr], psu(sdmvpsu) strata(sdmvstra)
+
+{txt}Sampling weights:{col 19}{res}wtint2yr
+             {txt}VCE:{col 19}{res}linearized
+     {txt}Single unit:{col 19}{res}missing
+        {txt}Strata 1:{col 19}{res}sdmvstra
+ {txt}Sampling unit 1:{col 19}{res}sdmvpsu
+           {txt}FPC 1:{col 19}<zero>
+{p2colreset}{...}
+
+{com}. 
+. // Table 1: Logistic Regression Results
+. // The purpose is to show the independent association of each exposure group with hypertension, after accounting for demographic confounders.
+. collect clear
+{res}{txt}
+{com}. // Run the survey logistic regression and collect the results
+. collect: svy: logit hypertension i.exposure i.gender i.race i.education householdincome age, or
+{res}{txt}(running {bf:logit} on estimation sample)
+{res}
+{txt}Survey: Logistic regression
+
+{col 1}{lalign 16:Number of strata}{col 17} = {res}{ralign 2:15}{txt}{col 50}{lalign 15:Number of obs}{col 65} = {res}{ralign 11:4,981}
+{txt}{col 1}{lalign 16:Number of PSUs}{col 17} = {res}{ralign 2:30}{txt}{col 50}{lalign 15:Population size}{col 65} = {res}{ralign 11:219,456,369}
+{txt}{col 50}{lalign 15:Design df}{col 65} = {res}{ralign 11:15}
+{txt}{col 50}{lalign 15:F({res:15}, {res:1})}{col 65} = {res}{ralign 11:5704.90}
+{txt}{col 50}{lalign 15:Prob > F}{col 65} = {res}{ralign 11:0.0104}
+
+{txt}{hline 26}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 27}{c |}{col 39}  Linearized
+{col 1}             hypertension{col 27}{c |} Odds ratio{col 39}   std. err.{col 51}      t{col 59}   P>|t|{col 67}     [95% con{col 80}f. interval]
+{hline 26}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 17}exposure {c |}
+{space 4}Food Insecurity Only  {c |}{col 27}{res}{space 2} .8370011{col 39}{space 2} .1370096{col 50}{space 1}   -1.09{col 59}{space 3}0.294{col 67}{space 4} .5904743{col 80}{space 3} 1.186454
+{txt}{space 9}Poor Sleep Only  {c |}{col 27}{res}{space 2} 1.158579{col 39}{space 2} .1390534{col 50}{space 1}    1.23{col 59}{space 3}0.239{col 67}{space 4} .8970675{col 80}{space 3} 1.496325
+{txt}{space 20}Both  {c |}{col 27}{res}{space 2} 1.097949{col 39}{space 2}  .156078{col 50}{space 1}    0.66{col 59}{space 3}0.521{col 67}{space 4} .8109484{col 80}{space 3}  1.48652
+{txt}{space 25} {c |}
+{space 19}gender {c |}
+{space 18}Female  {c |}{col 27}{res}{space 2}  .607235{col 39}{space 2} .0532653{col 50}{space 1}   -5.69{col 59}{space 3}0.000{col 67}{space 4} .5036843{col 80}{space 3} .7320742
+{txt}{space 25} {c |}
+{space 21}race {c |}
+{space 10}Other Hispanic  {c |}{col 27}{res}{space 2} 1.102688{col 39}{space 2} .1590338{col 50}{space 1}    0.68{col 59}{space 3}0.508{col 67}{space 4} .8108644{col 80}{space 3} 1.499538
+{txt}{space 6}Non-Hispanic White  {c |}{col 27}{res}{space 2}  .934295{col 39}{space 2} .1453818{col 50}{space 1}   -0.44{col 59}{space 3}0.669{col 67}{space 4} .6705687{col 80}{space 3} 1.301741
+{txt}{space 6}Non-Hispanic Black  {c |}{col 27}{res}{space 2} 1.559044{col 39}{space 2} .2194114{col 50}{space 1}    3.16{col 59}{space 3}0.007{col 67}{space 4} 1.155005{col 80}{space 3} 2.104423
+{txt}{space 6}Non-Hispanic Asian  {c |}{col 27}{res}{space 2} 1.458861{col 39}{space 2} .2475545{col 50}{space 1}    2.23{col 59}{space 3}0.042{col 67}{space 4} 1.016098{col 80}{space 3} 2.094558
+{txt}{space 14}Other Race  {c |}{col 27}{res}{space 2} .6269363{col 39}{space 2} .1160146{col 50}{space 1}   -2.52{col 59}{space 3}0.023{col 67}{space 4} .4225975{col 80}{space 3} .9300792
+{txt}{space 25} {c |}
+{space 16}education {c |}
+{space 12}9-11th grade  {c |}{col 27}{res}{space 2} 1.123894{col 39}{space 2} .1645495{col 50}{space 1}    0.80{col 59}{space 3}0.437{col 67}{space 4} .8226157{col 80}{space 3} 1.535514
+{txt}{space 4}High school graduate  {c |}{col 27}{res}{space 2} .9318711{col 39}{space 2} .1298008{col 50}{space 1}   -0.51{col 59}{space 3}0.620{col 67}{space 4} .6924969{col 80}{space 3} 1.253989
+{txt}{space 6}Some college or AA  {c |}{col 27}{res}{space 2} 1.054408{col 39}{space 2} .1551435{col 50}{space 1}    0.36{col 59}{space 3}0.724{col 67}{space 4} .7705603{col 80}{space 3} 1.442816
+{txt}College graduate or ab..  {c |}{col 27}{res}{space 2} .6762933{col 39}{space 2} .1112148{col 50}{space 1}   -2.38{col 59}{space 3}0.031{col 67}{space 4}  .476332{col 80}{space 3} .9601971
+{txt}{space 25} {c |}
+{space 10}householdincome {c |}{col 27}{res}{space 2}   .97235{col 39}{space 2} .0149468{col 50}{space 1}   -1.82{col 59}{space 3}0.088{col 67}{space 4} .9410078{col 80}{space 3} 1.004736
+{txt}{space 22}age {c |}{col 27}{res}{space 2}  1.03545{col 39}{space 2} .0026093{col 50}{space 1}   13.82{col 59}{space 3}0.000{col 67}{space 4} 1.029903{col 80}{space 3} 1.041027
+{txt}{space 20}_cons {c |}{col 27}{res}{space 2} .2591515{col 39}{space 2} .0739306{col 50}{space 1}   -4.73{col 59}{space 3}0.000{col 67}{space 4} .1410838{col 80}{space 3} .4760255
+{txt}{hline 26}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{p 0 6 2}Note: {bf:_cons} estimates baseline odds{txt}.{p_end}
+{res}{txt}
+{com}. 
+. // The intercept represents the odds of hypertension when all other variables in the model are at their reference level. It corresponds to a male, Non-Hispanic White, college graduate or above with full food security and no poor sleep.
+. 
+. // Format the collected table for a clean output
+. collect style showbase off // Hide the base levels of categorical variables
+{res}{txt}
+{com}. collect style cell _r_b, nformat(%5.2f) // Format odds ratios to 2 decimal places
+{res}{txt}
+{com}. collect style cell _r_ci, nformat(%5.2f) cidelimiter(,) // Format CIs in parentheses with a comma
+{res}{txt}
+{com}. collect style cell _r_p, nformat(%5.3f) // Format p-value to 3 decimal places
+{res}{txt}
+{com}. collect style cell _r_z, nformat(%5.2f) // Format Z-statistic to 2 decimal places
+{res}{txt}
+{com}. collect style cell _r_se, nformat(%5.4f) // Format Standard Error to 4 decimal places
+{res}{txt}
+{com}. 
+. // Create a single column for OR and CI to remove the vertical gap
+. collect layout (colname) (result[_r_b _r_ci])
+{res}
+{txt}{p 0 12 2}
+Collection: {res:default}
+{p_end}
+{p 0 12 2}
+{space 6}Rows: {res:colname}
+{p_end}
+{p 0 12 2}
+{space 3}Columns: {res:result[_r_b _r_ci]}
+{p_end}
+{p 0 12 2}
+{space 3}Table 1: {res:16 x 2}
+{p_end}
+
+{res}{smcl}
+{reset}{...}
+{hline 25}{c -}{c TT}{c -}{hline 11}{c -}{hline 10}
+{space 25} {c |} Coefficient {space 2}95% CI{space 2}
+{hline 25}{c -}{c +}{c -}{hline 11}{c -}{hline 10}
+Food Insecurity Only{space 5} {c |} {space 7}{result:0.84} {result:0.59, 1.19}
+Poor Sleep Only{space 10} {c |} {space 7}{result:1.16} {result:0.90, 1.50}
+Both{space 21} {c |} {space 7}{result:1.10} {result:0.81, 1.49}
+Female{space 19} {c |} {space 7}{result:0.61} {result:0.50, 0.73}
+Other Hispanic{space 11} {c |} {space 7}{result:1.10} {result:0.81, 1.50}
+Non-Hispanic White{space 7} {c |} {space 7}{result:0.93} {result:0.67, 1.30}
+Non-Hispanic Black{space 7} {c |} {space 7}{result:1.56} {result:1.16, 2.10}
+Non-Hispanic Asian{space 7} {c |} {space 7}{result:1.46} {result:1.02, 2.09}
+Other Race{space 15} {c |} {space 7}{result:0.63} {result:0.42, 0.93}
+9-11th grade{space 13} {c |} {space 7}{result:1.12} {result:0.82, 1.54}
+High school graduate{space 5} {c |} {space 7}{result:0.93} {result:0.69, 1.25}
+Some college or AA{space 7} {c |} {space 7}{result:1.05} {result:0.77, 1.44}
+College graduate or above {c |} {space 7}{result:0.68} {result:0.48, 0.96}
+Annual household income{space 2} {c |} {space 7}{result:0.97} {result:0.94, 1.00}
+Age in years at screening {c |} {space 7}{result:1.04} {result:1.03, 1.04}
+Intercept{space 16} {c |} {space 7}{result:0.26} {result:0.14, 0.48}
+{hline 25}{c -}{c BT}{c -}{hline 11}{c -}{hline 10}
+
+{com}. 
+. // Create shorter labels for the variables in the table
+. collect label levels colname "1.exposure" "Exposure"
+{res}{txt}
+{com}. collect label levels colname "2.gender" "Gender"
+{res}{txt}
+{com}. collect label levels colname "3.race" "Race"
+{res}{txt}
+{com}. collect label levels colname "4.education" "Education"
+{res}{txt}
+{com}. collect label levels colname "householdincome" "Hshld Inc"
+{res}{txt}
+{com}. collect label levels colname "age" "Age"
+{res}{txt}
+{com}. 
+. // Rename the result columns with user-friendly names
+. collect label levels result _r_b "OR", modify
+{res}{txt}
+{com}. collect label levels result _r_p "p-value", modify
+{res}{txt}
+{com}. collect label levels result _r_z "Z-stat", modify
+{res}{txt}
+{com}. collect label levels result _r_se "Std. Err.", modify
+{res}{txt}
+{com}. 
+. // Explicitly define the table layout to avoid the "layout does not identify any items" error
+. // Specify exactly what we want to see: the odds ratio, confidence interval, p-value, Z-stat, and standard error
+. collect layout (colname) (result[_r_b _r_ci _r_p _r_z _r_se])
+{res}
+{txt}{p 0 12 2}
+Collection: {res:default}
+{p_end}
+{p 0 12 2}
+{space 6}Rows: {res:colname}
+{p_end}
+{p 0 12 2}
+{space 3}Columns: {res:result[_r_b _r_ci _r_p _r_z _r_se]}
+{p_end}
+{p 0 12 2}
+{space 3}Table 1: {res:16 x 5}
+{p_end}
+
+{res}{smcl}
+{reset}{...}
+{hline 25}{c -}{c TT}{c -}{hline 4}{c -}{hline 10}{c -}{hline 7}{c -}{hline 6}{c -}{hline 9}
+{space 25} {c |} {space 2}OR {space 2}95% CI{space 2} p-value Z-stat Std. Err.
+{hline 25}{c -}{c +}{c -}{hline 4}{c -}{hline 10}{c -}{hline 7}{c -}{hline 6}{c -}{hline 9}
+Food Insecurity Only{space 5} {c |} {result:0.84} {result:0.59, 1.19} {space 2}{result:0.294} {space 1}{result:-1.09} {space 3}{result:0.1370}
+Poor Sleep Only{space 10} {c |} {result:1.16} {result:0.90, 1.50} {space 2}{result:0.239} {space 2}{result:1.23} {space 3}{result:0.1391}
+Both{space 21} {c |} {result:1.10} {result:0.81, 1.49} {space 2}{result:0.521} {space 2}{result:0.66} {space 3}{result:0.1561}
+Gender{space 19} {c |} {result:0.61} {result:0.50, 0.73} {space 2}{result:0.000} {space 1}{result:-5.69} {space 3}{result:0.0533}
+Other Hispanic{space 11} {c |} {result:1.10} {result:0.81, 1.50} {space 2}{result:0.508} {space 2}{result:0.68} {space 3}{result:0.1590}
+Race{space 21} {c |} {result:0.93} {result:0.67, 1.30} {space 2}{result:0.669} {space 1}{result:-0.44} {space 3}{result:0.1454}
+Non-Hispanic Black{space 7} {c |} {result:1.56} {result:1.16, 2.10} {space 2}{result:0.007} {space 2}{result:3.16} {space 3}{result:0.2194}
+Non-Hispanic Asian{space 7} {c |} {result:1.46} {result:1.02, 2.09} {space 2}{result:0.042} {space 2}{result:2.23} {space 3}{result:0.2476}
+Other Race{space 15} {c |} {result:0.63} {result:0.42, 0.93} {space 2}{result:0.023} {space 1}{result:-2.52} {space 3}{result:0.1160}
+9-11th grade{space 13} {c |} {result:1.12} {result:0.82, 1.54} {space 2}{result:0.437} {space 2}{result:0.80} {space 3}{result:0.1645}
+High school graduate{space 5} {c |} {result:0.93} {result:0.69, 1.25} {space 2}{result:0.620} {space 1}{result:-0.51} {space 3}{result:0.1298}
+Education{space 16} {c |} {result:1.05} {result:0.77, 1.44} {space 2}{result:0.724} {space 2}{result:0.36} {space 3}{result:0.1551}
+College graduate or above {c |} {result:0.68} {result:0.48, 0.96} {space 2}{result:0.031} {space 1}{result:-2.38} {space 3}{result:0.1112}
+Annual household income{space 2} {c |} {result:0.97} {result:0.94, 1.00} {space 2}{result:0.088} {space 1}{result:-1.82} {space 3}{result:0.0149}
+Age in years at screening {c |} {result:1.04} {result:1.03, 1.04} {space 2}{result:0.000} {space 1}{result:13.82} {space 3}{result:0.0026}
+Intercept{space 16} {c |} {result:0.26} {result:0.14, 0.48} {space 2}{result:0.000} {space 1}{result:-4.73} {space 3}{result:0.0739}
+{hline 25}{c -}{c BT}{c -}{hline 4}{c -}{hline 10}{c -}{hline 7}{c -}{hline 6}{c -}{hline 9}
+
+{com}. 
+. // Add a title and note for the table
+. collect title "Table 1. Logistic Regression Model of the Odds of Hypertension"
+{res}{txt}
+{com}. collect notes 1: "OR: Odds Ratio; 95% CI: 95% Confidence Interval. Reference groups are: full food security, no poor sleep, male, Non-Hispanic White, and college graduate or above."
+{res}{txt}
+{com}. 
+. // Export Table 1 as a separate Excel spreadsheet
+. collect export "output/Table1.xlsx", replace
+{res}{txt}{p 0 1 2}
+(collection {res:default} exported to file {browse "/Users/ishaanbhaduri/Library/Mobile Documents/com~apple~CloudDocs/03 Research/Stata/BIOSTAT 212/Lecture 7 BIOSTAT 212/Homework/output/Table1.xlsx":output/Table1.xlsx})
+{p_end}
+
+{com}. 
+. // Figure 1: Prevalence of Hypertension by Exposure Group
+. // The purpose is to visually represent the prevalence of hypertension across the four exposure groups, with confidence intervals.
+. svy: proportion hypertension, over(exposure)
+{res}{txt}(running {bf:proportion} on estimation sample)
+{res}
+{txt}Survey: Proportion estimation
+
+{col 1}{lalign 16:Number of strata}{col 17} = {res}{ralign 2:15}{txt}{col 59}{lalign 15:Number of obs}{col 74} = {res}{ralign 11:5,856}
+{txt}{col 1}{lalign 16:Number of PSUs}{col 17} = {res}{ralign 2:30}{txt}{col 59}{lalign 15:Population size}{col 74} = {res}{ralign 11:247,278,373}
+{txt}{col 59}{lalign 15:Design df}{col 74} = {res}{ralign 11:15}
+
+{txt}{hline 38}{c TT}{hline 11}{hline 11}{hline 14}{hline 12}
+{col 39}{c |}{col 51}  Linearized{col 62}            L{col 76}ogit
+{col 39}{c |} Proportion{col 51}   std. err.{col 63}     [95% con{col 76}f. interval]
+{hline 38}{c +}{hline 11}{hline 11}{hline 14}{hline 12}
+{space 16}hypertension@exposure {c |}
+{space 13}No Hypertension Neither  {c |}{col 39}{res}{space 2} .5521497{col 51}{space 2} .0160003{col 62}{space 5} .5178535{col 76}{space 3}  .585957
+{txt}No Hypertension Food Insecurity Only  {c |}{col 39}{res}{space 2} .5710848{col 51}{space 2} .0257899{col 62}{space 5}  .515461{col 76}{space 3} .6249691
+{txt}{space 5}No Hypertension Poor Sleep Only  {c |}{col 39}{res}{space 2} .5476877{col 51}{space 2} .0190513{col 62}{space 5} .5068529{col 76}{space 3} .5878904
+{txt}{space 16}No Hypertension Both  {c |}{col 39}{res}{space 2} .5684733{col 51}{space 2}  .021905{col 62}{space 5} .5213116{col 76}{space 3} .6144251
+{txt}{space 16}Hypertension Neither  {c |}{col 39}{res}{space 2} .4478503{col 51}{space 2} .0160003{col 62}{space 5}  .414043{col 76}{space 3} .4821465
+{txt}{space 3}Hypertension Food Insecurity Only  {c |}{col 39}{res}{space 2} .4289152{col 51}{space 2} .0257899{col 62}{space 5} .3750309{col 76}{space 3}  .484539
+{txt}{space 8}Hypertension Poor Sleep Only  {c |}{col 39}{res}{space 2} .4523123{col 51}{space 2} .0190513{col 62}{space 5} .4121096{col 76}{space 3} .4931471
+{txt}{space 19}Hypertension Both  {c |}{col 39}{res}{space 2} .4315267{col 51}{space 2}  .021905{col 62}{space 5} .3855749{col 76}{space 3} .4786884
+{txt}{hline 38}{c BT}{hline 11}{hline 11}{hline 14}{hline 12}
+
+{com}. 
+. // Store the results in a matrix to prepare for graphing
+. matrix prop = e(b)
+{txt}
+{com}. matrix V = e(V)
+{txt}
+{com}. matrix list prop
+{res}
+{txt}prop[1,8]
+     0.hyperten~n@  0.hyperten~n@  0.hyperten~n@  0.hyperten~n@  1.hyperten~n@
+       1.exposure     2.exposure     3.exposure     4.exposure     1.exposure
+y1 {res}     .55214975      .57108483      .54768766      .56847325      .44785025
+
+{txt}     1.hyperten~n@  1.hyperten~n@  1.hyperten~n@
+       2.exposure     3.exposure     4.exposure
+y1 {res}     .42891517      .45231234      .43152675
+{reset}
+{com}. matrix list V
+{res}
+{txt}symmetric V[8,8]
+              0.hyperten~n@  0.hyperten~n@  0.hyperten~n@  0.hyperten~n@  1.hyperten~n@
+                1.exposure     2.exposure     3.exposure     4.exposure     1.exposure
+0.hyperten~n@
+ 1.exposure {res}     .00025601
+{txt}0.hyperten~n@
+ 2.exposure {res}     .00015174      .00066512
+{txt}0.hyperten~n@
+ 3.exposure {res}    -.00001808      1.349e-06      .00036295
+{txt}0.hyperten~n@
+ 4.exposure {res}     .00012116      .00011057       .0000388      .00047983
+{txt}1.hyperten~n@
+ 1.exposure {res}    -.00025601     -.00015174      .00001808     -.00012116      .00025601
+{txt}1.hyperten~n@
+ 2.exposure {res}    -.00015174     -.00066512     -1.349e-06     -.00011057      .00015174
+{txt}1.hyperten~n@
+ 3.exposure {res}     .00001808     -1.349e-06     -.00036295      -.0000388     -.00001808
+{txt}1.hyperten~n@
+ 4.exposure {res}    -.00012116     -.00011057      -.0000388     -.00047983      .00012116
+
+{txt}              1.hyperten~n@  1.hyperten~n@  1.hyperten~n@
+                2.exposure     3.exposure     4.exposure
+1.hyperten~n@
+ 2.exposure {res}     .00066512
+{txt}1.hyperten~n@
+ 3.exposure {res}     1.349e-06      .00036295
+{txt}1.hyperten~n@
+ 4.exposure {res}     .00011057       .0000388      .00047983
+{reset}
+{com}. 
+. // Create a temporary dataset from the matrix for graphing purposes
+. clear
+{txt}
+{com}. set obs 4
+{txt}{p}
+Number of observations ({bf:_N}) was 0,
+now 4.
+{p_end}
+
+{com}. gen group = _n
+{txt}
+{com}. gen prop = prop[1, _n]
+{txt}
+{com}. gen ci_lower = prop[1, _n] - invt(e(df_r),0.975) * sqrt(V[_n, _n])
+{txt}
+{com}. gen ci_upper = prop[1, _n] + invt(e(df_r),0.975) * sqrt(V[_n, _n])
+{txt}
+{com}. 
+. // Label the new variables for the graph
+. label define group_labels 1 "Neither" 2 "Food Insecurity Only" 3 "Poor Sleep Only" 4 "Both"
+{txt}
+{com}. label values group group_labels
+{txt}
+{com}. 
+. // Create the bar graph with confidence intervals
+. twoway (bar prop group, fcolor(gs15) lcolor(black) barwidth(0.6)) (rcap ci_lower ci_upper group, lcolor(black)), ///
+>    legend(off) ///
+>    xtitle("Combined Exposure to Food Insecurity and Poor Sleep") ///
+>    ytitle("Prevalence of Hypertension (%)") ///
+>    ylabel(0(0.05)0.6, format(%5.2f) labsize(small)) ///
+>    xlabel(1 2 3 4, valuelabel angle(horizontal) labsize(small)) ///
+>    title("Prevalence of Hypertension by Exposure Group") ///
+>    subtitle("2017-2018 NHANES Data")
+{res}{txt}
+{com}. 
+. // Export the bar graph as a high-quality PNG image
+. graph export "output/Hypertension_Prevalence_Figure.png", replace
+{txt}{p 0 4 2}
+file {bf}
+/Users/ishaanbhaduri/Library/Mobile Documents/com~apple~CloudDocs/03 Research/Stata/BIOSTAT 212/Lecture 7 BIOSTAT 212/Homework/output/Hypertension_Prevalence_Figure.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}. 
+. // -------------------------------------------------------------------------------------------------
+. // SECTION 5: FINAL WORD DOCUMENT EXPORT
+. // -------------------------------------------------------------------------------------------------
+. 
+. // Header, Name, Class, Date
+. capture putdocx clear
+{txt}
+{com}. putdocx begin, footer(foot) header(head) pagesize(letter)
+{res}{txt}
+{com}. putdocx paragraph, halign(center)
+{res}{txt}
+{com}. putdocx text ("Final Project: The Relationship Between Food Insecurity, Poor Sleep, and Hypertension in the US"), font("",14)
+{res}{txt}
+{com}. putdocx paragraph, halign(center)
+{res}{txt}
+{com}. putdocx text ("Ishaan Bhaduri")
+{res}{txt}
+{com}. putdocx paragraph, halign(center)
+{res}{txt}
+{com}. putdocx text ("UCSF BIOSTAT 212")
+{res}{txt}
+{com}. putdocx paragraph, halign(center)
+{res}{txt}
+{com}. putdocx text ("`c(current_date)' `c(current_time)'")
+{res}{txt}
+{com}. 
+. // Introduction paragraph
+. putdocx paragraph, style(Heading1) halign(center)
+{res}{txt}
+{com}. putdocx text ("Introduction")
+{res}{txt}
+{com}. putdocx paragraph
+{res}{txt}
+{com}. putdocx text ("The purpose of this study is to examine the association between a combination of food insecurity and poor sleep and the prevalence of hypertension in US adult population. Hypertension is a significant public health burden, and while various risk factors have been identified, the combined impact of socioeconomic and behavioral factors is not fully understood. This analysis will investigate how two factors together contribute to a heightened risk of hypertension, using data from the 2017-2018 National Health and Nutrition Examination Survey (NHANES)."), font("Times New Roman",12)
+{res}{txt}
+{com}. 
+. // Put Figure 1 (bar graph) into Word with subtitle
+. putdocx paragraph, style(Heading1) halign(center)
+{res}{txt}
+{com}. putdocx text ("Figure 1")
+{res}{txt}
+{com}. 
+. // Put Figure 1 in the Word doc
+. putdocx image "output/Hypertension_Prevalence_Figure.png"
+{res}{txt}
+{com}. 
+. // Add subtitle to Figure 1
+. putdocx paragraph
+{res}{txt}
+{com}. putdocx text ("Figure 1. Prevalence of Hypertension by Combined Exposure to Food Insecurity and Poor Sleep. The prevalence and 95% confidence intervals were calculated using survey weights from the 2017-2018 NHANES data. The four exposure groups are defined as: Neither, Food Insecurity Only, Poor Sleep Only, and Both."), font("Times New Roman",12)
+{res}{txt}
+{com}. 
+. // Add Table 1 heading
+. putdocx paragraph, style(Heading1) halign(center)
+{res}{txt}
+{com}. putdocx text ("Table 1")
+{res}{txt}
+{com}. 
+. // Put Table 1 in the Word doc using the `collect` command
+. collect style putdocx, layout(autofitcontents)
+{res}{txt}
+{com}. putdocx collect
+{res}{txt}{p 0 1 2}
+(collection {res:default} posted to {bf:putdocx})
+{p_end}
+
+{com}. 
+. // Add subtitle to Table 1
+. putdocx paragraph
+{res}{txt}
+{com}. putdocx text ("Table 1. Logistic Regression Model of the Odds of Hypertension. The model uses a combined exposure variable for food insecurity and poor sleep, adjusted for demographic factors. OR: Odds Ratio; 95% CI: 95% Confidence Interval. Reference groups are: full food security, no poor sleep, male, Non-Hispanic White, and college graduate or above."), font("Times New Roman",12)
+{res}{txt}
+{com}. putdocx paragraph
+{res}{txt}
+{com}. putdocx text ("The intercept represents the odds of hypertension when all other variables in the model are at their reference level. It corresponds to a male, Non-Hispanic White, college graduate or above with full food security and no poor sleep."), font("Times New Roman",12)
+{res}{txt}
+{com}. 
+. // Save the Word document
+. putdocx save "output/Bhaduri_Hypertension_Analysis.docx", replace
+{res}successfully replaced {browse "/Users/ishaanbhaduri/Library/Mobile Documents/com~apple~CloudDocs/03 Research/Stata/BIOSTAT 212/Lecture 7 BIOSTAT 212/Homework/output/Bhaduri_Hypertension_Analysis.docx":"/Users/ishaanbhaduri/Library/Mobile Documents/com~apple~CloudDocs/03 Research/Stata/BIOSTAT 212/Lecture 7 BIOSTAT 212/Homework/output/Bhaduri_Hypertension_Analysis.docx"}
+{txt}
+{com}. 
+. // Closing the analysis
+. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/Users/ishaanbhaduri/Library/Mobile Documents/com~apple~CloudDocs/03 Research/Stata/BIOSTAT 212/Lecture 7 BIOSTAT 212/Homework/output/NHANES2017-2018merge_clean_analysis.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}31 Aug 2025, 10:22:16
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
